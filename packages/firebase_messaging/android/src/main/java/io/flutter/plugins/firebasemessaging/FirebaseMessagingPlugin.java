@@ -38,7 +38,7 @@ import java.util.Map;
 public class FirebaseMessagingPlugin extends BroadcastReceiver
     implements MethodCallHandler, NewIntentListener, FlutterPlugin, ActivityAware {
 
-  private static final String CLICK_ACTION_VALUE = "FLUTTER_NOTIFICATION_CLICK";
+  private static final String PAYLOAD_VALUE = "payload";
   private static final String TAG = "FirebaseMessagingPlugin";
 
   private MethodChannel channel;
@@ -301,8 +301,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
 
   /** @return true if intent contained a message to send. */
   private boolean sendMessageFromIntent(String method, Intent intent) {
-    if (CLICK_ACTION_VALUE.equals(intent.getAction())
-        || CLICK_ACTION_VALUE.equals(intent.getStringExtra("click_action"))) {
+    if (intent.getStringExtra(PAYLOAD_VALUE) != null) {
       Map<String, Object> message = new HashMap<>();
       Bundle extras = intent.getExtras();
 
