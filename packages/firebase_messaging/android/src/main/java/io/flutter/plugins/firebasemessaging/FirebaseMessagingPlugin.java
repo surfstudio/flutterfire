@@ -40,6 +40,8 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
 
   private static final String PAYLOAD_VALUE = "payload";
   private static final String TAG = "FirebaseMessagingPlugin";
+  private static final String TITLE_PREFIX = "\"title\":\"";
+  private static final String BODY_PREFIX = "\"shortText\":\"";
 
   private MethodChannel channel;
   private Context applicationContext;
@@ -137,9 +139,19 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
     Map<String, Object> notificationMap = new HashMap<>();
 
     String title = notification != null ? notification.getTitle() : null;
+    if(title == null && message.getData().containsKey(PAYLOAD_VALUE) &&
+            message.getData().get(PAYLOAD_VALUE) instanceof String){
+      title = getNotificationPartFromString(TITLE_PREFIX, message.getData().get(PAYLOAD_VALUE));
+    }
+
     notificationMap.put("title", title);
 
     String body = notification != null ? notification.getBody() : null;
+    if(body == null && message.getData().containsKey(PAYLOAD_VALUE) &&
+            message.getData().get(PAYLOAD_VALUE) instanceof String){
+      body = getNotificationPartFromString(BODY_PREFIX, message.getData().get(PAYLOAD_VALUE));
+    }
+
     notificationMap.put("body", body);
 
     content.put("notification", notificationMap);
@@ -301,7 +313,6 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
 
   /** @return true if intent contained a message to send. */
   private boolean sendMessageFromIntent(String method, Intent intent) {
-    if (intent.getStringExtra(PAYLOAD_VALUE) != null) {
       Map<String, Object> message = new HashMap<>();
       Bundle extras = intent.getExtras();
 
@@ -324,7 +335,13 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
 
       channel.invokeMethod(method, message);
       return true;
-    }
-    return false;
+  }
+
+  static String getNotificationPartFromString(String key, String str) {
+    if (str == null) return null;
+    int startIndex = str.indexOf(key) + key.length();
+    int endIndex = str.indexOf("\",\"", startIndex);
+
+    return str.substring(startIndex, endIndex);
   }
 }
